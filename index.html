@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NativeCamp Discussion練習</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial,
+               'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+  background: #eef2f7;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 20px 12px 48px;
+}
+
+.container { width: 100%; max-width: 640px; }
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+.app-title { font-size: 1.4rem; font-weight: 700; color: #1a365d; margin-bottom: 4px; }
+.app-sub { font-size: 0.85rem; color: #718096; margin-bottom: 18px; }
+
+/* ---- Top controls ---- */
+.top-card { margin-bottom: 16px; }
+
+.tab-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab-btn {
+  flex: 1;
+  padding: 11px;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  color: #4a5568;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab-btn.active { background: #3182ce; border-color: #3182ce; color: #fff; }
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+.speed-row select {
+  padding: 6px 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #fff;
+}
+
+.lesson-row { margin-bottom: 14px; }
+.lesson-row label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4a5568;
+  margin-bottom: 6px;
+}
+#lesson-select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+}
+.stats-line {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #a0aec0;
+}
+
+.hidden-manage {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.hidden-panel {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+.hidden-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+.hidden-item:last-child { border-bottom: none; }
+.restore-btn {
+  padding: 4px 10px;
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+/* ---- Screens ---- */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ---- Question card (study list) ---- */
+.q-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.q-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.q-badge {
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #ed8936;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.q-text { flex: 1; font-size: 1.02rem; font-weight: 600; color: #1a202c; line-height: 1.6; }
+
+.icon-btn {
+  border: none;
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: 8px;
+  width: 32px; height: 32px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.icon-btn:hover { background: #e2e8f0; }
+.icon-btn.playing { background: #bee3f8; color: #2b6cb0; }
+
+.q-delete {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  color: #cbd5e0;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.q-delete:hover { color: #e53e3e; }
+
+.answer-block {
+  border-top: 1px solid #edf2f7;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.answer-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #3182ce;
+  margin-bottom: 4px;
+}
+.answer-ja {
+  font-size: 0.94rem;
+  color: #2d3748;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+.answer-row { display: flex; align-items: center; gap: 8px; }
+.reveal-btn {
+  padding: 8px 14px;
+  background: #38a169;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reveal-btn:hover { background: #2f855a; }
+.answer-en {
+  font-size: 0.94rem;
+  color: #1a202c;
+  line-height: 1.7;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f0fff4;
+  border-radius: 8px;
+  display: none;
+}
+
+/* ---- Toast ---- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: #2d3748;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+#toast a { color: #90cdf4; cursor: pointer; font-weight: 600; text-decoration: underline; }
+
+/* ---- Audio-only mode ---- */
+.audio-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.audio-progress { font-size: 0.9rem; color: #718096; margin-bottom: 18px; }
+.audio-line-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.audio-line-text {
+  font-size: 1.2rem;
+  color: #1a202c;
+  line-height: 1.8;
+  min-height: 6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.audio-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 26px;
+}
+.ctrl-btn {
+  border: none;
+  background: #edf2f7;
+  color: #2d3748;
+  border-radius: 50%;
+  width: 52px; height: 52px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.ctrl-btn:hover { background: #e2e8f0; }
+.ctrl-btn.main {
+  width: 68px; height: 68px;
+  background: #3182ce;
+  color: #fff;
+  font-size: 1.6rem;
+}
+.ctrl-btn.main:hover { background: #2b6cb0; }
+.audio-note {
+  margin-top: 22px;
+  font-size: 0.78rem;
+  color: #a0aec0;
+  line-height: 1.6;
+}
+.audio-empty { color: #a0aec0; padding: 20px 0; }
+
+.unsupported {
+  background: #fff5f5;
+  color: #c53030;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="card top-card">
+  <div class="app-title">NativeCamp Discussion練習</div>
+  <div class="app-sub">Daily News（Life）のDiscussionを暗記</div>
+
+  <div class="lesson-row">
+    <label for="lesson-select">レッスン</label>
+    <select id="lesson-select" onchange="switchLesson(this.value)"></select>
+    <div class="stats-line" id="stats-line"></div>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab-btn active" id="tab-study" onclick="switchTab('study')">📖 学習モード</button>
+    <button class="tab-btn" id="tab-audio" onclick="switchTab('audio')">🎧 音声のみモード</button>
+  </div>
+
+  <div class="speed-row">
+    読み上げ速度：
+    <select id="rate-select" onchange="saveRate(this.value)">
+      <option value="0.75">ゆっくり</option>
+      <option value="0.9" selected>標準</option>
+      <option value="1.0">はやい</option>
+    </select>
+  </div>
+
+  <div class="hidden-manage" onclick="toggleHiddenPanel()">非表示にした問題を管理 (<span id="hidden-count">0</span>)</div>
+  <div class="hidden-panel" id="hidden-panel" style="display:none">
+    <div id="hidden-list"></div>
+  </div>
+</div>
+
+<div id="unsupported-msg" class="unsupported" style="display:none">
+  お使いのブラウザは音声読み上げ（Web Speech API）に対応していません。テキストのみで学習してください。
+</div>
+
+<!-- Study screen -->
+<div id="study-screen" class="screen active">
+  <div id="q-list"></div>
+</div>
+
+<!-- Audio-only screen -->
+<div id="audio-screen" class="screen">
+  <div class="audio-card">
+    <div class="audio-progress" id="audio-progress">- / -</div>
+    <div class="audio-line-label" id="audio-line-label">&nbsp;</div>
+    <div class="audio-line-text" id="audio-line-text">▶ を押して開始してください</div>
+    <div class="audio-controls">
+      <button class="ctrl-btn" onclick="audioPrevQuestion()" title="前の問題">⏮</button>
+      <button class="ctrl-btn main" id="audio-playpause" onclick="audioTogglePlay()" title="再生/一時停止">▶</button>
+      <button class="ctrl-btn" onclick="audioNextQuestion()" title="次の問題">⏭</button>
+    </div>
+    <div class="audio-note">
+      英語の質問→（考える間）→英語の答え（選択肢1→選択肢2）の順に自動で読み上げます。<br>
+      画面を見ずに音声だけで練習できますが、画面がロックされたりタブが非表示になると再生が止まる場合があります。
+    </div>
+  </div>
+</div>
+
+</div><!-- .container -->
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// Add new lessons by appending another { id, title, questions: [...] } entry below.
+const LESSONS = [
+  {
+    id: 'hot-days',
+    title: '暑さ・気候をテーマにしたレッスン',
+    questions: [
+      {
+        id: 'hot-days-1',
+        en: "Do you enjoy spending time outdoors on very hot days?",
+        answers: [
+          { label: "Yes", ja: "はい、公園で過ごす暑い夏の日がとても好きです。日差しが元気をくれて、気分を上げてくれます。安全のために、いつも冷たい水とつばの広い帽子を持っていきます。", en: "Yes, I really enjoy hot summer days at the park. The sunshine gives me energy and lifts my mood. I usually bring cold water and a wide hat to stay safe." },
+          { label: "No", ja: "いいえ、とても暑い時は室内にいます。強い暑さで疲れて動きが鈍くなります。扇風機のそばで本を読む方がずっと快適です。", en: "No, I stay indoors when the weather is very hot. The strong heat makes me feel tired and slow. Reading a book near a fan feels far more comfortable for me." }
+        ]
+      },
+      {
+        id: 'hot-days-2',
+        en: "Have you ever visited a swimming spot without any lifeguards?",
+        answers: [
+          { label: "Yes", ja: "はい、以前友人たちと小さな山の川で泳いだことがあります。水は澄んでいて静かで、魔法のように感じました。それでも、今思うと少し不用心だったと思います。", en: "Yes, I once swam in a small mountain river with friends. The water was clear and quiet, which felt magical. Still, I now think we were a little too careless." },
+          { label: "No", ja: "いいえ、いつも訓練を受けたライフガードがいるプールやビーチを選びます。誰かが見てくれていると分かると安心して水を楽しめます。その安全を当たり前だとは決して思いません。", en: "No, I always pick pools or beaches with trained lifeguards. Knowing someone is watching helps me relax and enjoy the water. I would never take that safety for granted." }
+        ]
+      },
+      {
+        id: 'hot-days-3',
+        en: "Would you rather live in (A) a place with hot summers or (B) a place with cool summers?",
+        answers: [
+          { label: "(A)", ja: "長くて暑い夏がある場所を選びます。暖かい日は家族で海に行った旅行を思い出させてくれます。一方、寒い朝はいつも布団に隠れたくなります。", en: "I would choose a place with long, hot summers. Warm days remind me of family trips to the sea. Cold mornings, on the other hand, always make me want to hide under blankets." },
+          { label: "(B)", ja: "夏が穏やかで涼しい町を選びます。厳しい暑さなしで眠れるのは素晴らしく健康的だと感じます。エアコンをほとんど使わなくて済むので、お金の節約にもなります。", en: "I would pick a town with mild, cool summers. Sleeping without heavy heat feels wonderful and healthy. I would also save money because I would rarely need air conditioning." }
+        ]
+      },
+      {
+        id: 'hot-days-4',
+        en: "How does your family stay comfortable when the weather becomes very hot?",
+        answers: [
+          { label: "Idea 1", ja: "我が家では、すべての部屋で扇風機をつけて、ドアを開けたままにしています。母は大きなポットで冷たいお茶を作り、一日中それを飲みます。こうした小さな習慣が本当に助けになっています。", en: "In my family, we turn on fans in every room and keep the doors open. My mother makes big pitchers of cold tea, which we drink all day. These small habits really help us cope." },
+          { label: "Idea 2", ja: "朝早くにカーテンを閉めて日差しを入れないようにしています。父は夕食に軽いサラダと冷たい麺類だけを作ります。そうすれば、誰も長い時間熱いコンロのそばに立たなくて済みます。", en: "We close the curtains early in the morning to keep the sunlight out. My father cooks only light salads and cold noodles for dinner. That way, nobody has to stand near a hot stove for long." }
+        ]
+      },
+      {
+        id: 'hot-days-5',
+        en: "Have you ever felt worried about news reports on climate change?",
+        answers: [
+          { label: "Yes", ja: "はい、気候関連のニュースには、一日中心が揺さぶられることがあります。姪たちが将来どんな暮らしをするのか、ずっと考えてしまいます。そのため、今は家でエネルギーの節約を心がけています。", en: "Yes, some climate news really shakes me for a whole day. I keep thinking about how my nieces will live in the future. Because of that, I try to save energy at home now." },
+          { label: "No", ja: "いいえ、強い見出しを見ても大抵は冷静でいます。心配しすぎてもストレスになるだけで、誰の役にも立ちません。自分でコントロールできる日々の小さな行動に集中する方が好きです。", en: "No, I usually stay calm even after strong headlines. Worrying too much only stresses me out and helps nobody. I prefer to focus on small daily actions I can control." }
+        ]
+      },
+      {
+        id: 'hot-days-6',
+        en: "Which do you trust more for weather updates, (A) TV news or (B) phone apps?",
+        answers: [
+          { label: "(A)", ja: "夕方のテレビの天気予報を一番信頼しています。キャスターが地図を見せながら、数字が実際に何を意味するのか説明してくれます。夕食と一緒にそれを見るのが、ちょっとした日課になっています。", en: "I trust the evening TV weather report the most. The anchor shows maps and explains what the numbers really mean. Watching it with dinner has become a small daily ritual." },
+          { label: "(B)", ja: "主にスマホの天気アプリに頼っています。1時間ごとに更新され、雨が降る前に知らせてくれます。忙しい生活には、そういう素早い情報の方がずっと合っています。", en: "I mostly rely on the weather app on my phone. It updates every hour and warns me before rain arrives. That kind of quick information fits my busy schedule much better." }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'fitness-heart',
+    title: '運動・筋力トレーニングをテーマにしたレッスン',
+    questions: [
+      {
+        id: 'fitness-heart-1',
+        en: "Do you include any strength training in your weekly routine?",
+        answers: [
+          { label: "Yes", ja: "はい、週に数回筋力トレーニングをしています。ウェイトを持ち上げると、強くエネルギッシュな気分になります。時間が経つにつれて、姿勢が良くなり、日々のスタミナも増えたと感じています。", en: "Yes, I do strength exercises a few times each week. Lifting weights makes me feel strong and energetic. Over time, I have noticed better posture and more daily stamina." },
+          { label: "No", ja: "いいえ、筋力トレーニングはほとんどしません。ジムに通うには予定が詰まりすぎています。体を動かしたい時は、ウォーキングやサイクリングの方が好きです。", en: "No, I rarely do any strength training. My schedule feels too full for the gym. I usually prefer walking or cycling when I want to move." }
+        ]
+      },
+      {
+        id: 'fitness-heart-2',
+        en: "Do you think many people ignore the importance of exercise for the heart?",
+        answers: [
+          { label: "Yes", ja: "はい、多くの人が心臓の健康を完全に見落としていると思います。忙しい生活のせいで、運動の優先順位はどんどん下がってしまいます。分かりにくいアドバイスも、どこから始めればいいか分からなくさせています。", en: "Yes, I think many people overlook heart health entirely. Busy lives push exercise far down their list of priorities. Confusing advice also makes it hard to know where to begin." },
+          { label: "No", ja: "いいえ、意識は実はかなり急速に高まっていると感じます。フィットネスアプリやSNSが、健康的な運動を常に発信しています。以前よりも多くの人が、運動がなぜ大切なのか理解しているようです。", en: "No, I feel awareness is actually growing quickly. Fitness apps and social media constantly promote healthy movement. More people than ever seem to understand why exercise matters." }
+        ]
+      },
+      {
+        id: 'fitness-heart-3',
+        en: "For heart health, which do you prefer: (A) aerobic exercise or (B) strength training?",
+        answers: [
+          { label: "(A)", ja: "早歩きやサイクリングのような有酸素運動の方が好きです。始めやすく、道具もほとんど必要ありません。いつもすっきりして、エネルギーに満ちた気分で終えられます。", en: "I prefer aerobic exercise like brisk walking or cycling. It is easy to start and needs little equipment. I always finish feeling refreshed and full of energy." },
+          { label: "(B)", ja: "最近は筋力トレーニングに惹かれています。筋肉をつけることは、関節や日々の動作を支えてくれます。年齢を重ねても、体を強く保つことにもつながります。", en: "I lean toward strength training these days. Building muscle supports my joints and daily movements. It also keeps my body strong as I grow older." }
+        ]
+      },
+      {
+        id: 'fitness-heart-4',
+        en: "How can we encourage more women to try strength training?",
+        answers: [
+          { label: "Idea 1", ja: "初心者向けの温かいクラスがあると、とても助けになると思います。多くの女性は、一人でジムに入ることに不安を感じます。分かりやすくシンプルな指導は、すぐに自信を築いてくれます。", en: "I think welcoming beginner classes would help a lot. Many women feel nervous entering a gym alone. Clear, simple guidance can quickly build their confidence." },
+          { label: "Idea 2", ja: "私は、実際の成功体験を共有することが一番効果的だと思います。他の人が上達していく姿を見ると、目標が現実的に感じられます。支え合えるオンラインのグループも、初心者のやる気と継続を保ってくれます。", en: "For me, sharing real success stories works best. Seeing others improve makes the goal feel possible. Supportive online groups can also keep beginners motivated and consistent." }
+        ]
+      },
+      {
+        id: 'fitness-heart-5',
+        en: "Do you believe short, simple workouts can truly improve health?",
+        answers: [
+          { label: "Yes", ja: "はい、小さな運動でも違いを生むと心から信じています。短いセッションは毎日繰り返しやすいです。そうした小さな積み重ねが、やがて本物の、長続きする健康につながります。", en: "Yes, I truly believe small workouts make a difference. Short sessions are easy to repeat every day. Those little efforts slowly add up to real, lasting health." },
+          { label: "No", ja: "いいえ、短い運動だけでは十分ではないと思います。意味のある変化には、通常もっと多くの時間と努力が必要です。本当の強度がなければ、結果はかなり限定的なままになりがちです。", en: "No, I doubt that brief workouts are enough alone. Meaningful change usually demands more time and effort. Without real intensity, the results often stay quite limited." }
+        ]
+      },
+      {
+        id: 'fitness-heart-6',
+        en: "Which matters more for fitness success: (A) intensity or (B) consistency?",
+        answers: [
+          { label: "(A)", ja: "強度が最も速い進歩を生むと思います。限界に挑戦することが、体をより強く成長させてくれます。ハードで集中したセッションは、より早く目に見える結果をもたらします。", en: "I think intensity drives the fastest progress. Pushing my limits challenges my body to grow stronger. Hard, focused sessions give me visible results sooner." },
+          { label: "(B)", ja: "私にとっては、継続が何より大切です。定期的に取り組むことが、本当に長続きする習慣を作ります。無理のない着実な努力は、怪我を避けながら何年も続けさせてくれます。", en: "For me, consistency clearly matters most. Showing up regularly builds habits that truly last. Gentle, steady effort avoids injury and keeps me going for years." }
+        ]
+      },
+      {
+        id: 'fitness-heart-7',
+        en: "What advice would you give someone who wants to start exercising but feels afraid?",
+        answers: [
+          { label: "Idea 1", ja: "とても小さな一歩から始めるように伝えます。毎日の短い散歩は、失敗する恐怖を取り除いてくれます。簡単な目標が達成できると、そこから自然と自信が育っていきます。", en: "I would tell them to begin with very small steps. A short daily walk removes the fear of failing. Once easy goals succeed, confidence naturally grows from there." },
+          { label: "Idea 2", ja: "友人やクラスを見つけて参加することを勧めます。誰かと一緒に運動すると、威圧感が減り、より楽しく感じられます。支え合えるグループは、不安な初心者を継続的な参加者に変えてくれます。", en: "I would suggest finding a friend or class to join. Exercising with others feels less intimidating and more fun. A supportive group can turn nervous beginners into regulars." }
+        ]
+      }
+    ]
+  }
+];
+
+const HIDDEN_KEY = 'ncdq_hidden_ids';
+const RATE_KEY = 'ncdq_rate';
+const LESSON_KEY = 'ncdq_lesson_id';
+const ttsSupported = 'speechSynthesis' in window;
+
+let hiddenIds = loadHidden();
+let speechRate = loadRate();
+let currentLessonId = loadLesson();
+
+function loadHidden() {
+  try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []); }
+  catch { return new Set(); }
+}
+function saveHidden() {
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hiddenIds]));
+}
+function loadRate() {
+  const v = parseFloat(localStorage.getItem(RATE_KEY));
+  return isNaN(v) ? 0.9 : v;
+}
+function saveRate(v) {
+  speechRate = parseFloat(v);
+  localStorage.setItem(RATE_KEY, String(speechRate));
+}
+function loadLesson() {
+  const saved = localStorage.getItem(LESSON_KEY);
+  return LESSONS.some(l => l.id === saved) ? saved : LESSONS[0].id;
+}
+function saveLesson(id) {
+  currentLessonId = id;
+  localStorage.setItem(LESSON_KEY, id);
+}
+
+function currentLesson() {
+  return LESSONS.find(l => l.id === currentLessonId) || LESSONS[0];
+}
+
+function activeQuestions() {
+  return currentLesson().questions.filter(q => !hiddenIds.has(q.id));
+}
+
+// ---- Lessons ----
+function buildLessonSelect() {
+  const sel = document.getElementById('lesson-select');
+  sel.innerHTML = LESSONS.map((l, i) => `<option value="${l.id}">${i + 1}. ${escapeHtml(l.title)}</option>`).join('');
+  sel.value = currentLessonId;
+  renderStatsLine();
+}
+
+function renderStatsLine() {
+  const totalQuestions = LESSONS.reduce((sum, l) => sum + l.questions.length, 0);
+  document.getElementById('stats-line').textContent =
+    `全 ${LESSONS.length} レッスン ／ 累計 ${totalQuestions} 問`;
+}
+
+function switchLesson(id) {
+  saveLesson(id);
+  renderStudyList();
+  audioStop();
+  buildAudioQueue();
+  renderAudioIdle();
+}
+
+// ---- Tabs ----
+function switchTab(name) {
+  document.getElementById('tab-study').classList.toggle('active', name === 'study');
+  document.getElementById('tab-audio').classList.toggle('active', name === 'audio');
+  document.getElementById('study-screen').classList.toggle('active', name === 'study');
+  document.getElementById('audio-screen').classList.toggle('active', name === 'audio');
+  if (name === 'audio') {
+    audioStop();
+    buildAudioQueue();
+    renderAudioIdle();
+  } else {
+    audioStop();
+  }
+}
+
+// ---- Study list rendering ----
+function renderStudyList() {
+  const container = document.getElementById('q-list');
+  const list = activeQuestions();
+  if (list.length === 0) {
+    container.innerHTML = '<div class="card"><p style="color:#a0aec0;text-align:center">表示できる問題がありません。上の「非表示にした問題を管理」から復元してください。</p></div>';
+  } else {
+    container.innerHTML = list.map((q, i) => renderQuestionCard(q, i + 1)).join('');
+  }
+  renderHiddenPanel();
+}
+
+function renderQuestionCard(q, num) {
+  return `
+  <div class="q-card" data-id="${q.id}">
+    <button class="q-delete" title="この問題を非表示にする" onclick="deleteQuestion('${q.id}')">✕</button>
+    <div class="q-head">
+      <div class="q-badge">Q${num}</div>
+      <div class="q-text" style="flex:1">${escapeHtml(q.en)}</div>
+      <button class="icon-btn" onclick="speakOne(this,'${escapeAttr(q.en)}')">🔊</button>
+    </div>
+    ${q.answers.map((a, ai) => renderAnswerBlock(q, a, ai)).join('')}
+  </div>`;
+}
+
+function renderAnswerBlock(q, a, ai) {
+  const uid = q.id + '_' + ai;
+  return `
+  <div class="answer-block">
+    <div class="answer-label">${escapeHtml(a.label)}</div>
+    <div class="answer-ja">${escapeHtml(a.ja)}</div>
+    <div class="answer-row">
+      <button class="reveal-btn" onclick="revealAnswer('${uid}')">英語で答えを見る</button>
+    </div>
+    <div class="answer-en" id="en-${uid}">
+      ${escapeHtml(a.en)}
+      <button class="icon-btn" style="margin-left:6px;vertical-align:middle" onclick="speakOne(this,'${escapeAttr(a.en)}')">🔊</button>
+    </div>
+  </div>`;
+}
+
+function revealAnswer(uid) {
+  document.getElementById('en-' + uid).style.display = 'block';
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+// ---- Single-line TTS (study mode buttons, English only) ----
+function speakOne(btn, text) {
+  if (!ttsSupported) return;
+  speechSynthesis.cancel();
+  audioStop();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = speechRate;
+  document.querySelectorAll('.icon-btn.playing').forEach(b => b.classList.remove('playing'));
+  btn.classList.add('playing');
+  u.onend = () => btn.classList.remove('playing');
+  u.onerror = () => btn.classList.remove('playing');
+  speechSynthesis.speak(u);
+}
+
+// ---- Delete / hide ----
+function deleteQuestion(id) {
+  hiddenIds.add(id);
+  saveHidden();
+  renderStudyList();
+  showToast('問題を非表示にしました', () => {
+    hiddenIds.delete(id);
+    saveHidden();
+    renderStudyList();
+  });
+}
+
+function toggleHiddenPanel() {
+  const panel = document.getElementById('hidden-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderHiddenPanel() {
+  const hiddenInLesson = currentLesson().questions.filter(q => hiddenIds.has(q.id));
+  document.getElementById('hidden-count').textContent = hiddenInLesson.length;
+  const listEl = document.getElementById('hidden-list');
+  if (hiddenInLesson.length === 0) {
+    listEl.innerHTML = '<div style="color:#a0aec0">非表示の問題はありません</div>';
+    return;
+  }
+  listEl.innerHTML = hiddenInLesson.map(q => {
+    return `<div class="hidden-item"><span>${escapeHtml(q.en.slice(0, 30))}${q.en.length > 30 ? '…' : ''}</span><button class="restore-btn" onclick="restoreQuestion('${q.id}')">復元</button></div>`;
+  }).join('');
+}
+
+function restoreQuestion(id) {
+  hiddenIds.delete(id);
+  saveHidden();
+  renderStudyList();
+}
+
+let toastTimer = null;
+function showToast(msg, onUndo) {
+  const t = document.getElementById('toast');
+  t.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  t.appendChild(span);
+  if (onUndo) {
+    const a = document.createElement('a');
+    a.textContent = '元に戻す';
+    a.onclick = () => { onUndo(); t.style.display = 'none'; };
+    t.appendChild(a);
+  }
+  t.style.display = 'flex';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.display = 'none'; }, 4500);
+}
+
+// ==== Audio-only mode ====
+let audioQueue = [];      // flat list of {text, lang, pauseAfter, qIdx}
+let blockStarts = [];     // step index where each question block starts
+let curStep = 0;
+let isPlaying = false;
+let gen = 0;
+let pendingTimeout = null;
+
+function spokenLabel(label) {
+  if (label === '(A)') return 'Option A';
+  if (label === '(B)') return 'Option B';
+  return label;
+}
+
+function buildAudioQueue() {
+  const list = activeQuestions();
+  audioQueue = [];
+  blockStarts = [];
+  const THINK = 3000, GAP = 1500, BEFORE_NEXT = 2000;
+  list.forEach((q, qIdx) => {
+    blockStarts.push(audioQueue.length);
+    audioQueue.push({ text: q.en, lang: 'en-US', pauseAfter: THINK, qIdx, label: '質問' });
+    q.answers.forEach((a, ai) => {
+      const isLast = ai === q.answers.length - 1;
+      audioQueue.push({ text: spokenLabel(a.label) + '. ' + a.en, lang: 'en-US', pauseAfter: isLast ? BEFORE_NEXT : GAP, qIdx, label: '答え ' + a.label });
+    });
+  });
+  curStep = Math.min(curStep, Math.max(0, audioQueue.length - 1));
+}
+
+function renderAudioIdle() {
+  const list = activeQuestions();
+  document.getElementById('audio-playpause').textContent = '▶';
+  if (list.length === 0) {
+    document.getElementById('audio-progress').textContent = '-';
+    document.getElementById('audio-line-label').textContent = '';
+    document.getElementById('audio-line-text').innerHTML = '<span class="audio-empty">再生できる問題がありません</span>';
+    return;
+  }
+  document.getElementById('audio-progress').textContent = `問題 1 / ${list.length}`;
+  document.getElementById('audio-line-label').textContent = '';
+  document.getElementById('audio-line-text').textContent = '▶ を押して開始してください';
+}
+
+function currentQIdx() {
+  return audioQueue.length ? audioQueue[Math.min(curStep, audioQueue.length - 1)].qIdx : 0;
+}
+
+function updateAudioUI(stepIdx) {
+  const list = activeQuestions();
+  const step = audioQueue[stepIdx];
+  document.getElementById('audio-progress').textContent = `問題 ${step.qIdx + 1} / ${list.length}`;
+  document.getElementById('audio-line-label').textContent = step.label;
+  document.getElementById('audio-line-text').textContent = step.text;
+}
+
+function audioTogglePlay() {
+  if (!ttsSupported) return;
+  if (audioQueue.length === 0) return;
+  if (isPlaying) {
+    audioPause();
+  } else {
+    audioPlay();
+  }
+}
+
+function audioPlay() {
+  isPlaying = true;
+  gen++;
+  document.getElementById('audio-playpause').textContent = '⏸';
+  const myGen = gen;
+  speakFrom(curStep, myGen);
+}
+
+function speakFrom(stepIdx, myGen) {
+  if (myGen !== gen) return;
+  if (stepIdx >= audioQueue.length) {
+    isPlaying = false;
+    curStep = 0;
+    document.getElementById('audio-playpause').textContent = '▶';
+    document.getElementById('audio-line-label').textContent = '';
+    document.getElementById('audio-line-text').textContent = '最後まで再生しました。もう一度 ▶ を押すと最初から再生します。';
+    return;
+  }
+  curStep = stepIdx;
+  updateAudioUI(stepIdx);
+  const step = audioQueue[stepIdx];
+  const u = new SpeechSynthesisUtterance(step.text);
+  u.lang = step.lang;
+  u.rate = speechRate;
+  u.onend = () => {
+    if (myGen !== gen) return;
+    pendingTimeout = setTimeout(() => {
+      if (myGen !== gen) return;
+      speakFrom(stepIdx + 1, myGen);
+    }, step.pauseAfter);
+  };
+  u.onerror = () => {
+    if (myGen !== gen) return;
+    pendingTimeout = setTimeout(() => {
+      if (myGen !== gen) return;
+      speakFrom(stepIdx + 1, myGen);
+    }, 300);
+  };
+  speechSynthesis.speak(u);
+}
+
+function audioPause() {
+  isPlaying = false;
+  gen++;
+  speechSynthesis.cancel();
+  if (pendingTimeout) { clearTimeout(pendingTimeout); pendingTimeout = null; }
+  document.getElementById('audio-playpause').textContent = '▶';
+}
+
+function audioStop() {
+  isPlaying = false;
+  gen++;
+  if (ttsSupported) speechSynthesis.cancel();
+  if (pendingTimeout) { clearTimeout(pendingTimeout); pendingTimeout = null; }
+  const btn = document.getElementById('audio-playpause');
+  if (btn) btn.textContent = '▶';
+}
+
+function audioNextQuestion() {
+  if (audioQueue.length === 0) return;
+  const wasPlaying = isPlaying;
+  audioPause();
+  const qIdx = currentQIdx();
+  const nextQ = qIdx + 1;
+  if (nextQ < blockStarts.length) {
+    curStep = blockStarts[nextQ];
+  } else {
+    curStep = 0;
+  }
+  updateAudioUI(curStep);
+  if (wasPlaying) audioPlay();
+}
+
+function audioPrevQuestion() {
+  if (audioQueue.length === 0) return;
+  const wasPlaying = isPlaying;
+  audioPause();
+  const qIdx = currentQIdx();
+  const prevQ = Math.max(0, qIdx - 1);
+  curStep = blockStarts[prevQ];
+  updateAudioUI(curStep);
+  if (wasPlaying) audioPlay();
+}
+
+// ---- init ----
+document.getElementById('rate-select').value = String(speechRate);
+buildLessonSelect();
+if (!ttsSupported) {
+  document.getElementById('unsupported-msg').style.display = 'block';
+}
+renderStudyList();
+</script>
+</body>
+</html>
