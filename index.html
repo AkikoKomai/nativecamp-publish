@@ -282,6 +282,18 @@ body {
   font-size: 1.6rem;
 }
 .ctrl-btn.main:hover { background: #2b6cb0; }
+.repeat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 0.88rem;
+  color: #4a5568;
+  cursor: pointer;
+}
+.repeat-row input { width: 16px; height: 16px; accent-color: #3182ce; cursor: pointer; }
+
 .audio-note {
   margin-top: 22px;
   font-size: 0.78rem;
@@ -353,6 +365,10 @@ body {
       <button class="ctrl-btn main" id="audio-playpause" onclick="audioTogglePlay()" title="再生/一時停止">▶</button>
       <button class="ctrl-btn" onclick="audioNextQuestion()" title="次の問題">⏭</button>
     </div>
+    <label class="repeat-row">
+      <input type="checkbox" id="repeat-toggle" onchange="toggleRepeat(this.checked)">
+      🔁 最後まで行ったら最初から繰り返す
+    </label>
     <div class="audio-note">
       英語の質問→（考える間）→英語の答え（選択肢1→選択肢2）の順に自動で読み上げます。<br>
       画面を見ずに音声だけで練習できますが、画面がロックされたりタブが非表示になると再生が止まる場合があります。
@@ -544,11 +560,13 @@ const LESSONS = [
 const HIDDEN_KEY = 'ncdq_hidden_ids';
 const RATE_KEY = 'ncdq_rate';
 const LESSON_KEY = 'ncdq_lesson_id';
+const REPEAT_KEY = 'ncdq_repeat';
 const ttsSupported = 'speechSynthesis' in window;
 
 let hiddenIds = loadHidden();
 let speechRate = loadRate();
 let currentLessonId = loadLesson();
+let repeatMode = loadRepeat();
 
 function loadHidden() {
   try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []); }
@@ -564,6 +582,13 @@ function loadRate() {
 function saveRate(v) {
   speechRate = parseFloat(v);
   localStorage.setItem(RATE_KEY, String(speechRate));
+}
+function loadRepeat() {
+  return localStorage.getItem(REPEAT_KEY) === '1';
+}
+function toggleRepeat(checked) {
+  repeatMode = checked;
+  localStorage.setItem(REPEAT_KEY, checked ? '1' : '0');
 }
 function loadLesson() {
   const saved = localStorage.getItem(LESSON_KEY);
@@ -817,6 +842,15 @@ function audioPlay() {
 function speakFrom(stepIdx, myGen) {
   if (myGen !== gen) return;
   if (stepIdx >= audioQueue.length) {
+    if (repeatMode && audioQueue.length > 0) {
+      document.getElementById('audio-line-label').textContent = '';
+      document.getElementById('audio-line-text').textContent = '最後まで再生しました。最初に戻ります…';
+      pendingTimeout = setTimeout(() => {
+        if (myGen !== gen) return;
+        speakFrom(0, myGen);
+      }, 2500);
+      return;
+    }
     isPlaying = false;
     curStep = 0;
     document.getElementById('audio-playpause').textContent = '▶';
@@ -892,6 +926,7 @@ function audioPrevQuestion() {
 
 // ---- init ----
 document.getElementById('rate-select').value = String(speechRate);
+document.getElementById('repeat-toggle').checked = repeatMode;
 buildLessonSelect();
 if (!ttsSupported) {
   document.getElementById('unsupported-msg').style.display = 'block';
