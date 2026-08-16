@@ -386,6 +386,60 @@ body {
 // Add new lessons by appending another { id, title, questions: [...] } entry below.
 const LESSONS = [
   {
+    id: 'disaster-prep',
+    title: '災害・防災をテーマにしたレッスン',
+    questions: [
+      {
+        id: 'disaster-prep-1',
+        en: "Have you ever felt an earthquake or a strong shake at your home?",
+        answers: [
+          { label: "Yes", ja: "はい、去年アパートで小さな地震を感じました。ランプが数秒間揺れて、本当に怖かったです。", en: "Yes, I felt a small earthquake at my apartment last year. The lamp swayed for a few seconds, and I was really scared." },
+          { label: "No", ja: "いいえ、私の故郷はとても静かで安全です。地震はテレビのニュース番組でしか見たことがなく、実際に経験したことはありません。", en: "No, my hometown is very quiet and safe. I have only seen earthquakes on television news programs, never in real life." }
+        ]
+      },
+      {
+        id: 'disaster-prep-2',
+        en: "During a bad storm or shake, do you (A) stay inside your house or (B) go outside to a safe open area?",
+        answers: [
+          { label: "(A)", ja: "私の家は頑丈なので、たいてい室内にいます。そういう時のために、キッチンに水や軽食も常備しています。", en: "I usually stay inside because my house is strong. I also keep water and snacks in the kitchen for these moments." },
+          { label: "(B)", ja: "家の近くの公園に外に出ます。広々とした開けた場所の方が、重い天井の下にいるよりずっと安全に感じます。", en: "I go outside to the park near my home. Wide open spaces feel much safer than sitting under a heavy ceiling." }
+        ]
+      },
+      {
+        id: 'disaster-prep-3',
+        en: "Do you keep an emergency kit with food, water, and a flashlight at home?",
+        answers: [
+          { label: "Yes", ja: "はい、我が家では玄関のそばに小さな非常用バッグを置いています。水や軽食、突然の停電に備えた懐中電灯が入っています。", en: "Yes, my family keeps a small bag by the front door. It has water, snacks, and a flashlight for sudden power problems." },
+          { label: "No", ja: "いいえ、まだ用意していません。大切だとは分かっているのですが、いつも必要な物をきちんと買うのを忘れてしまいます。", en: "No, I have not made one yet. I know it is important, but I always forget to buy the right supplies for it." }
+        ]
+      },
+      {
+        id: 'disaster-prep-4',
+        en: "What is one simple way that people in your area can help their neighbors after a natural disaster?",
+        answers: [
+          { label: "Idea 1", ja: "余った食料や毛布を近所の人と分け合うことができます。私の住むマンションでは、一人暮らしのお年寄りの安否確認もしています。", en: "People can share extra food and blankets with their neighbors. In my building, we also check on older people who live alone." },
+          { label: "Idea 2", ja: "近所の人たちは嵐の後に道路や庭の片付けを手伝います。車を持たない人をより安全な場所まで送るドライバーもいます。", en: "My neighbors help clean streets and yards after storms. Some drivers also take people without cars to safer places nearby." }
+        ]
+      },
+      {
+        id: 'disaster-prep-5',
+        en: "For news about a major disaster, do you prefer (A) watching television or (B) reading updates on your phone?",
+        answers: [
+          { label: "(A)", ja: "夕食の時に両親と一緒にニュースを見ます。現地からの生映像があると、状況をより分かりやすく理解できます。", en: "I watch the news with my parents at dinner. Live video from the area helps me understand the situation more clearly." },
+          { label: "(B)", ja: "休憩中にスマホでニュースを読みます。短い更新情報がとても速く届くので、電車に乗っている間でも確認できます。", en: "I read news on my phone during breaks. Short updates come very quickly, and I can check them while riding the train." }
+        ]
+      },
+      {
+        id: 'disaster-prep-6',
+        en: "Would you ever join a group that helps people rebuild homes and lives after a disaster?",
+        answers: [
+          { label: "Yes", ja: "はい、週末に地元のグループに参加したいと思っています。家族が家を再建する手伝いをすることは、とても意義のある仕事に思えます。", en: "Yes, I would like to join a local group on weekends. Helping families rebuild their homes sounds like really meaningful work to me." },
+          { label: "No", ja: "いいえ、毎週仕事で忙しくしています。すでに被災地の人々を支援している信頼できる団体に、お金を寄付する方がいいと思います。", en: "No, my job keeps me busy every week. I would rather donate money to trusted groups that already help people in disaster areas." }
+        ]
+      }
+    ]
+  },
+  {
     id: 'hot-days',
     title: '暑さ・気候をテーマにしたレッスン',
     questions: [
